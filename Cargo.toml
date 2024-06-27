@@ -1,0 +1,9 @@
+[package]
+name = "student-gear-academy"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[build-dependencies]
+gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.1" }
