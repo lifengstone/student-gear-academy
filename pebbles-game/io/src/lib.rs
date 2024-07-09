@@ -1,14 +1,13 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+#[derive(Debug, Default, Clone, Encode, Decode, TypeInfo)]
+pub struct PebblesInit {
+    pub difficulty: DifficultyLevel,
+    pub pebbles_count: u32,
+    pub max_pebbles_per_turn: u32,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+#[derive(Debug, Default, Clone, Encode, Decode, TypeInfo)]
+pub enum DifficultyLevel {
+    #[default]
+    Easy,
+    Hard,
 }
