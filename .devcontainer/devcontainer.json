@@ -3,7 +3,10 @@
 {
 	"name": "Rust",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/rust:0-1-bullseye",
+	// "image": "mcr.microsoft.com/devcontainers/rust:0-1-bullseye",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -14,5 +17,12 @@
 	},
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "rustc --version"
+	// "postCreateCommand": "rustc --version"
+	"postCreateCommand": [
+		"cd ~",
+		"curl -L https://github.com/WebAssembly/binaryen/releases/download/version_117/binaryen-version_117-x86_64-linux.tar.gz | tar -xzf -",
+		"export PATH='~/binaryen-version_117/bin':$PATH",
+		". ~/.bashrc",
+		"wasm-opt --version"
+	]
 }
