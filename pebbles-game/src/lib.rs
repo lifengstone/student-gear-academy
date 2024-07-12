@@ -162,3 +162,32 @@ fn find_best_move(max_pebbles_per_turn: u32, pebbles_remaining: u32) -> u32 {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use gtest::{Log, Program, System};
+
+    const PROGRAM_ID: u64 = 1;
+
+    #[test]
+    fn test_initialization() {
+        // create test environment
+        let system = System::new();
+        system.init_logger();
+
+        // create program instance
+        let program = Program::current(&system);
+        assert_eq!(program.id(), 1.into());
+
+        // initialize program
+        let init_msg = PebblesInit {
+            difficulty: DifficultyLevel::Easy,
+            pebbles_count: 10,
+            max_pebbles_per_turn: 3,
+        };
+        let encoded_init_msg = init_msg.encode();
+
+        // let init_result = program.send_bytes(PROGRAM_ID, encoded_init_msg);
+        // assert!(!init_result.main_failed());
+    }
+}

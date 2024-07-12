@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 gstd.workspace = true
 pebbles-game-io.workspace = true
-wabt-sys = "0.8.0"
 
 [build-dependencies]
 gear-wasm-builder.workspace = true
