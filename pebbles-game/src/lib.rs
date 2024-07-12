@@ -167,8 +167,6 @@ mod tests {
     use super::*;
     use gtest::{Log, Program, System};
 
-    const PROGRAM_ID: u64 = 1;
-
     #[test]
     fn test_initialization() {
         // create test environment
@@ -187,7 +185,7 @@ mod tests {
         };
         let encoded_init_msg = init_msg.encode();
 
-        // let init_result = program.send_bytes(PROGRAM_ID, encoded_init_msg);
-        // assert!(!init_result.main_failed());
+        let init_result = program.send_bytes(42, encoded_init_msg);
+        assert!(!init_result.main_failed());
     }
 }
