@@ -49,6 +49,7 @@ impl PartialEq for Player {
 pub enum PebblesEvent {
     CounterTurn(u32),
     Won(Player),
+    InvalidMove,
 }
 
 #[derive(Debug, Default, Clone, Encode, Decode, TypeInfo)]
