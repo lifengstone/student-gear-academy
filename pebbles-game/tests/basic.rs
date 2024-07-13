@@ -2,121 +2,102 @@
 //! Check all program strategies (you may split the get_random_u32() function into two separated implementations for #[cfg(test)] and #[cfg(not(test))] environments).
 //! Check negative scenarios and invalid input data processing.
 
-// use pebbles_game_io::*;
-// use gtest::{Log, Program, System};
+use gtest::{Log, Program, System};
+use pebbles_game_io::*;
 
-// const PROGRAM_ID: u64 = 1;
+/// 测试游戏初始化是否正确
+#[test]
+fn test_game_initialization() {
+    let system = System::new();
+    system.init_logger();
 
-// #[test]
-// fn test_initialization() {
-//     let system = System::new();
-//     system.init_logger();
+    let program = Program::current(&system);
 
-//     let program = Program::current(&system);
+    let init_msg = PebblesInit {
+        difficulty: DifficultyLevel::Easy,
+        pebbles_count: 10,
+        max_pebbles_per_turn: 3,
+    };
 
-//     // Correct initialization
-//     let init_msg = PebblesInit {
-//         difficulty: DifficultyLevel::Easy,
-//         pebbles_count: 10,
-//         max_pebbles_per_turn: 3,
-//     };
+    let encoded_init_msg = init_msg.encode();
 
-//     let init_result = program.send(PROGRAM_ID, init_msg);
-//     assert!(!init_result.main_failed());
+    let init_result = program.send_bytes(42, encoded_init_msg);
+    assert!(!init_result.main_failed(), "初始化失败");
 
-//     // Check if the state is initialized correctly
-//     let state: GameState = program.read_state(()).expect("Failed to read state");
-//     assert_eq!(state.pebbles_count, 10);
-//     assert_eq!(state.max_pebbles_per_turn, 3);
-//     assert_eq!(state.pebbles_remaining, 10);
-//     assert_eq!(state.difficulty, DifficultyLevel::Easy);
-//     assert!(state.winner.is_none());
+    let state = program.state::<GameState>();
+    assert_eq!(state.pebbles_count, 10);
+    assert_eq!(state.max_pebbles_per_turn, 3);
+    assert!(state.pebbles_remaining <= 10);
+    assert!(matches!(state.first_player, Player::User | Player::Program));
+    assert!(state.winner.is_none());
+}
 
-//     // Invalid initialization: pebbles_count <= 0
-//     let init_msg = PebblesInit {
-//         difficulty: DifficultyLevel::Easy,
-//         pebbles_count: 0,
-//         max_pebbles_per_turn: 3,
-//     };
-//     let init_result = program.send(PROGRAM_ID, init_msg);
-//     assert!(init_result.main_failed());
+/// 测试所有程序策略
+#[test]
+fn test_program_strategies() {
+    let system = System::new();
+    system.init_logger();
 
-//     // Invalid initialization: max_pebbles_per_turn <= 0
-//     let init_msg = PebblesInit {
-//         difficulty: DifficultyLevel::Easy,
-//         pebbles_count: 10,
-//         max_pebbles_per_turn: 0,
-//     };
-//     let init_result = program.send(PROGRAM_ID, init_msg);
-//     assert!(init_result.main_failed());
+    let program = Program::current(&system);
 
-//     // Invalid initialization: max_pebbles_per_turn > pebbles_count
-//     let init_msg = PebblesInit {
-//         difficulty: DifficultyLevel::Easy,
-//         pebbles_count: 10,
-//         max_pebbles_per_turn: 11,
-//     };
-//     let init_result = program.send(PROGRAM_ID, init_msg);
-//     assert!(init_result.main_failed());
-// }
+    let init_msg = PebblesInit {
+        difficulty: DifficultyLevel::Easy,
+        pebbles_count: 10,
+        max_pebbles_per_turn: 3,
+    };
 
-// #[test]
-// fn test_program_strategies() {
-//     let system = System::new();
-//     system.init_logger();
+    let encoded_init_msg = init_msg.encode();
+    program.send_bytes(42, encoded_init_msg);
 
-//     let program = Program::current(&system);
+    let mut state = program.state::<GameState>();
 
-//     let init_msg = PebblesInit {
-//         difficulty: DifficultyLevel::Easy,
-//         pebbles_count: 10,
-//         max_pebbles_per_turn: 3,
-//     };
-//     program.send(PROGRAM_ID, init_msg);
+    // 易难度下，测试程序随机移除石子
+    if state.first_player == Player::Program {
+        assert!(state.pebbles_remaining < 10);
+    }
 
-//     // Check if the program makes a valid move on its turn
-//     let action = PebblesAction::Turn(2);
-//     let handle_result = program.send(PROGRAM_ID, action);
-//     let log = handle_result.log();
-//     assert!(log.contains(&Log::event(PebblesEvent::CounterTurn(_))));
-// }
+    // 重置状态并测试困难模式下的最优策略
+    program.send_bytes(42, encoded_init_msg);
+    state = program.state::<GameState>();
+    state.difficulty = DifficultyLevel::Hard;
+    program.send_bytes(42, state.encode());
 
-// #[test]
-// fn test_negative_scenarios() {
-//     let system = System::new();
-//     system.init_logger();
+    state = program.state::<GameState>();
+    if state.first_player == Player::Program {
+        let best_move = find_best_move(state.max_pebbles_per_turn, state.pebbles_remaining);
+        assert_eq!(state.pebbles_remaining, 10 - best_move);
+    }
+}
 
-//     let program = Program::current(&system);
+/// 测试负场景和无效输入数据处理
+#[test]
+fn test_negative_scenarios_and_invalid_data() {
+    let system = System::new();
+    system.init_logger();
 
-//     let init_msg = PebblesInit {
-//         difficulty: DifficultyLevel::Easy,
-//         pebbles_count: 10,
-//         max_pebbles_per_turn: 3,
-//     };
-//     program.send(PROGRAM_ID, init_msg);
+    let program = Program::current(&system);
 
-//     // Negative scenario: User takes more pebbles than allowed
-//     let action = PebblesAction::Turn(4);
-//     let handle_result = program.send(PROGRAM_ID, action);
-//     let log = handle_result.log();
-//     assert!(log.contains(&Log::event(PebblesEvent::InvalidMove)));
+    let invalid_init_msgs = vec![
+        PebblesInit {
+            difficulty: DifficultyLevel::Easy,
+            pebbles_count: 0,
+            max_pebbles_per_turn: 3,
+        },
+        PebblesInit {
+            difficulty: DifficultyLevel::Easy,
+            pebbles_count: 10,
+            max_pebbles_per_turn: 0,
+        },
+        PebblesInit {
+            difficulty: DifficultyLevel::Easy,
+            pebbles_count: 5,
+            max_pebbles_per_turn: 6,
+        },
+    ];
 
-//     // Negative scenario: User takes more pebbles than remaining
-//     let action = PebblesAction::Turn(11);
-//     let handle_result = program.send(PROGRAM_ID, action);
-//     let log = handle_result.log();
-//     assert!(log.contains(&Log::event(PebblesEvent::InvalidMove)));
-
-//     // Negative scenario: User gives up
-//     let action = PebblesAction::GiveUp;
-//     let handle_result = program.send(PROGRAM_ID, action);
-//     let log = handle_result.log();
-//     assert!(log.contains(&Log::event(PebblesEvent::Won(Player::Program))));
-
-//     // Negative scenario: User tries to play after giving up
-//     let action = PebblesAction::Turn(1);
-//     let handle_result = program.send(PROGRAM_ID, action);
-//     let log = handle_result.log();
-//     // Since the game is already over after giving up, any further moves should be considered invalid.
-//     assert!(log.contains(&Log::event(PebblesEvent::InvalidMove)));
-// }
+    for invalid_init in invalid_init_msgs {
+        let encoded_init = invalid_init.encode();
+        let result = program.send_bytes(42, encoded_init);
+        assert!(result.main_failed(), "错误的初始化参数应导致失败");
+    }
+}
