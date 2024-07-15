@@ -28,7 +28,7 @@ tokio.workspace = true
 # It's necessary to include all metawasm crates in the workspace section, otherwise they'll be
 # ignored by Cargo and won't be built.
 [workspace]
-members = [ "controller", "controller-io", "counter"
+members = [ 
 #  "io",
 #  "state",
 #  "xtask",
@@ -41,7 +41,7 @@ gear-wasm-builder = "1.4.1"
 gtest = "1.4.1"
 gclient = "1.4.1"
 # template-io.path = "io"
-controller-io.path = "controller-io"
+# controller-io.path = "controller-io"
 tokio = "1"
 xshell = "0.2"
 anyhow = "1"
