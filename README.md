@@ -1,13 +1,14 @@
-Guidelines for assignments:
+###Program deployment
 
-- Create a dedicated GitHub repository for the homework.
-- Your repository name should include the -gear-academy suffix, for example, myname-gear-academy.
-- Exclude build artifacts such as target, .binpath, and editor files from the repository.
-- Enable GitHub actions for your repository.
-- Submit a homework as a pull request (PR) from a feature branch derived from the main branch.
-- Don't include any unrelated changes in the PR.
-- If any changes are requested, make updates within the existing branch and PR.
-- PR should be merged to the main branch after the homework is accepted.
-- Do not include any scaffolding code, private keys, or passwords in the PR.
-- Ensure the tests and build process pass successfully.
-- You may use git from the command line instead of relying on the GitHub web interface.
+Program details:
+- Program ID: 0x4b419ebe450c09841be2bc4db3f8a163e358dfe47605422d28746de4aa9b3e74
+- Status: Active
+- Crteated at: 7-16-2024 18:53:21
+- Codehash: 0x6b4b76cee495359b74f5acbde14368aed9bde254317743dbff5bb58256ff4f58
+- Block hash: 0x74aff50357075a0c05cd47c3658ae88848f8302ead297099d42d2df2c1a0f763
+
+Metadata:
+- init.input: PebblesInit
+- handle.input: PebblesGameIoPebblesAction
+- handle.output: PebblesGameIoPebblesEvent
+- state.output: GameState
